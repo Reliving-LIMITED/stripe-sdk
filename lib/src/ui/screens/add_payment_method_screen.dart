@@ -31,9 +31,11 @@ class AddPaymentMethodScreen extends StatefulWidget {
   /// The card form used to collect payment method details.
   final CardForm form;
 
+  final String webReturnPath;
+
   /// Add a payment method using a Stripe Setup Intent
   AddPaymentMethodScreen.withSetupIntent(this._createSetupIntent,
-      {PaymentMethodStore paymentMethodStore, Stripe stripe, this.form})
+      {PaymentMethodStore paymentMethodStore, Stripe stripe, this.form, this.webReturnPath})
       : _useSetupIntent = true,
         _paymentMethodStore = paymentMethodStore ?? PaymentMethodStore.instance,
         _stripe = stripe ?? Stripe.instance;
@@ -41,7 +43,7 @@ class AddPaymentMethodScreen extends StatefulWidget {
   /// Add a payment method without using a Stripe Setup Intent
   @Deprecated(
       'Setting up payment methods without a setup intent is not recommended by Stripe. Consider using [withSetupIntent]')
-  AddPaymentMethodScreen.withoutSetupIntent({PaymentMethodStore paymentMethodStore, Stripe stripe, this.form})
+  AddPaymentMethodScreen.withoutSetupIntent({PaymentMethodStore paymentMethodStore, Stripe stripe, this.form, this.webReturnPath})
       : _useSetupIntent = false,
         _createSetupIntent = null,
         _paymentMethodStore = paymentMethodStore ?? PaymentMethodStore.instance,
@@ -91,7 +93,7 @@ class _AddPaymentMethodScreenState extends State<AddPaymentMethodScreen> {
                   if (widget._useSetupIntent) {
                     final createSetupIntentResponse = await this.setupIntent;
                     final setupIntent = await widget._stripe
-                        .confirmSetupIntent(createSetupIntentResponse.clientSecret, paymentMethod['id']);
+                        .confirmSetupIntent(createSetupIntentResponse.clientSecret, paymentMethod['id'], webReturnPath: widget.webReturnPath);
 
                     hideProgressDialog(context);
                     if (setupIntent['status'] == 'succeeded') {
